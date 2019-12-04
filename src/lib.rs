@@ -2,6 +2,7 @@ pub extern crate anyhow;
 pub extern crate itertools;
 
 pub use anyhow::{anyhow, bail, Result};
+pub use itertools::Itertools;
 pub use std::fs::File;
 pub use std::io::prelude::*;
 pub use std::io::{self, BufReader};
