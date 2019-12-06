@@ -1,7 +1,7 @@
 use aoc2019::*;
 
 fn main() -> Result<()> {
-    let passwds: Vec<_> = (265275..=781584)
+    let passwds: Vec<_> = (265_275..=781_584)
         .map(|value| {
             itertools::unfold(value, |v| {
                 if *v > 0 {
