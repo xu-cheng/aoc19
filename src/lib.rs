@@ -15,3 +15,5 @@ pub fn open_input(file_name: &str) -> Result<BufReader<File>> {
     let reader = BufReader::new(File::open(file_path)?);
     Ok(reader)
 }
+
+pub mod computer;
