@@ -1,3 +1,5 @@
+extern crate bytecount;
+
 use aoc2019::*;
 
 fn main() -> Result<()> {
@@ -22,10 +24,9 @@ fn main() -> Result<()> {
 
     let layer = layers
         .iter()
-        .min_by_key(|layer| layer.iter().filter(|&&p| p == 0).count())
+        .min_by_key(|layer| bytecount::count(layer, 0))
         .unwrap();
-    let ans1 =
-        layer.iter().filter(|&&p| p == 1).count() * layer.iter().filter(|&&p| p == 2).count();
+    let ans1 = bytecount::count(layer, 1) * bytecount::count(layer, 2);
     println!("ans1={}", ans1);
 
     let image = layers
@@ -43,7 +44,7 @@ fn main() -> Result<()> {
             let p = image[idx];
             print!("{}", if p == 0 { "\x1B[40m " } else { "\x1B[107m " });
         }
-        print!("\x1B[m\n");
+        println!("\x1B[m");
     }
 
     Ok(())

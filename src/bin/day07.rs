@@ -3,8 +3,8 @@ use aoc2019::*;
 
 fn run_q1(prog: &Program, settings: &[i32]) -> Result<i32> {
     let mut val = 0;
-    for i in 0..5 {
-        let input = [settings[i], val];
+    for &setting in settings {
+        let input = [setting, val];
         val = prog.start_with_input(&input).execute()?[0];
     }
     Ok(val)
@@ -13,19 +13,17 @@ fn run_q1(prog: &Program, settings: &[i32]) -> Result<i32> {
 fn run_q2(prog: &Program, settings: &[i32]) -> Result<i32> {
     let mut val = 0;
     let mut instants: Vec<Instant> = Vec::with_capacity(5);
-    for i in 0..5 {
-        instants.push(prog.start_with_input(&[settings[i]]));
+    for &setting in settings {
+        instants.push(prog.start_with_input(&[setting]));
     }
-    'outer: loop {
-        for i in 0..5 {
-            let instant = &mut instants[i];
-            instant.input.push_back(val);
-            instant.step()?;
-            if let Some(out) = instant.output.pop_front() {
-                val = out;
-            } else {
-                break 'outer;
-            }
+    for i in (0..settings.len()).cycle() {
+        let instant = &mut instants[i];
+        instant.input.push_back(val);
+        instant.step()?;
+        if let Some(out) = instant.output.pop_front() {
+            val = out;
+        } else {
+            break;
         }
     }
     Ok(val)
