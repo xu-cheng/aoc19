@@ -1,7 +1,7 @@
 use aoc2019::computer::*;
 use aoc2019::*;
 
-fn run_q1(prog: &Program, settings: &[i32]) -> Result<i32> {
+fn run_q1(prog: &Program, settings: &[Int]) -> Result<Int> {
     let mut val = 0;
     for &setting in settings {
         let input = [setting, val];
@@ -10,7 +10,7 @@ fn run_q1(prog: &Program, settings: &[i32]) -> Result<i32> {
     Ok(val)
 }
 
-fn run_q2(prog: &Program, settings: &[i32]) -> Result<i32> {
+fn run_q2(prog: &Program, settings: &[Int]) -> Result<Int> {
     let mut val = 0;
     let mut instants: Vec<Instant> = Vec::with_capacity(5);
     for &setting in settings {
