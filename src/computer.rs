@@ -33,6 +33,7 @@ impl Program {
     pub fn start(&self) -> Instant {
         Instant {
             pc: 0,
+            base: 0,
             mem: self.0.clone(),
             input: VecDeque::new(),
             output: VecDeque::new(),
@@ -42,6 +43,7 @@ impl Program {
     pub fn start_with_input(&self, input: &[Int]) -> Instant {
         Instant {
             pc: 0,
+            base: 0,
             mem: self.0.clone(),
             input: VecDeque::from_iter(input.iter().cloned()),
             output: VecDeque::new(),
@@ -51,6 +53,7 @@ impl Program {
 
 pub struct Instant {
     pub pc: usize,
+    pub base: Int,
     pub mem: Vec<Int>,
     pub input: VecDeque<Int>,
     pub output: VecDeque<Int>,
@@ -89,6 +92,7 @@ enum OpCode {
     JumpIfFalse(ParameterMode, ParameterMode),
     LessThan(ParameterMode, ParameterMode, ParameterMode),
     Equal(ParameterMode, ParameterMode, ParameterMode),
+    AdjustBase(ParameterMode),
     Halt,
 }
 
@@ -109,6 +113,7 @@ impl TryFrom<Int> for OpCode {
             6 => Ok(OpCode::JumpIfFalse(m1, m2)),
             7 => Ok(OpCode::LessThan(m1, m2, m3)),
             8 => Ok(OpCode::Equal(m1, m2, m3)),
+            9 => Ok(OpCode::AdjustBase(m1)),
             99 => Ok(OpCode::Halt),
             _ => bail!("invalid op code {}", code),
         }
@@ -116,59 +121,59 @@ impl TryFrom<Int> for OpCode {
 }
 
 impl Instant {
-    fn read(&self, addr: usize) -> Result<Int> {
-        self.mem
-            .get(addr)
-            .copied()
-            .ok_or_else(|| anyhow!("out of range"))
+    fn read(&self, addr: usize) -> Int {
+        match self.mem.get(addr).copied() {
+            Some(val) => val,
+            None => 0,
+        }
     }
 
-    fn deref_read(&self, addr: usize) -> Result<Int> {
-        self.read(self.read(addr)? as usize)
+    fn deref_read(&self, addr: usize, base: Int) -> Int {
+        self.read((self.read(addr) + base) as usize)
     }
 
-    fn read_parameter(&self, idx: usize, mode: ParameterMode) -> Result<Int> {
+    fn write(&mut self, addr: usize, val: Int) {
+        if addr >= self.mem.len() {
+            self.mem.resize(addr + 1, 0);
+        }
+        self.mem[addr] = val;
+    }
+
+    fn deref_write(&mut self, addr: usize, base: Int, val: Int) {
+        self.write((self.read(addr) + base) as usize, val)
+    }
+
+    fn read_parameter(&self, idx: usize, mode: ParameterMode) -> Int {
         match mode {
-            ParameterMode::Position => self.deref_read(self.pc + idx),
+            ParameterMode::Position => self.deref_read(self.pc + idx, 0),
             ParameterMode::Immediate => self.read(self.pc + idx),
-            ParameterMode::Relative => unimplemented!(),
+            ParameterMode::Relative => self.deref_read(self.pc + idx, self.base),
         }
     }
 
-    fn write_parameter(&mut self, idx: usize, mode: ParameterMode, val: Int) -> Result<()> {
+    fn write_parameter(&mut self, idx: usize, mode: ParameterMode, val: Int) {
         match mode {
-            ParameterMode::Position => self.deref_write(self.pc + idx, val),
-            ParameterMode::Immediate => bail!("writing in immediate mode is not allowed."),
-            ParameterMode::Relative => unimplemented!(),
+            ParameterMode::Position => self.deref_write(self.pc + idx, 0, val),
+            ParameterMode::Immediate => self.write(self.pc + idx, val),
+            ParameterMode::Relative => self.deref_write(self.pc + idx, self.base, val),
         }
-    }
-
-    fn write(&mut self, addr: usize, val: Int) -> Result<()> {
-        self.mem
-            .get_mut(addr)
-            .map(|v| *v = val)
-            .ok_or_else(|| anyhow!("out of range"))
-    }
-
-    fn deref_write(&mut self, addr: usize, val: Int) -> Result<()> {
-        self.write(self.read(addr)? as usize, val)
     }
 
     pub fn step(&mut self) -> Result<StepResult> {
         loop {
-            match OpCode::try_from(self.read(self.pc)?)? {
+            match OpCode::try_from(self.read(self.pc))? {
                 OpCode::Add(m1, m2, m3) => {
-                    let val1 = self.read_parameter(1, m1)?;
-                    let val2 = self.read_parameter(2, m2)?;
+                    let val1 = self.read_parameter(1, m1);
+                    let val2 = self.read_parameter(2, m2);
                     let val3 = val1 + val2;
-                    self.write_parameter(3, m3, val3)?;
+                    self.write_parameter(3, m3, val3);
                     self.pc += 4;
                 }
                 OpCode::Mul(m1, m2, m3) => {
-                    let val1 = self.read_parameter(1, m1)?;
-                    let val2 = self.read_parameter(2, m2)?;
+                    let val1 = self.read_parameter(1, m1);
+                    let val2 = self.read_parameter(2, m2);
                     let val3 = val1 * val2;
-                    self.write_parameter(3, m3, val3)?;
+                    self.write_parameter(3, m3, val3);
                     self.pc += 4;
                 }
                 OpCode::Input(m1) => {
@@ -176,43 +181,47 @@ impl Instant {
                         .input
                         .pop_front()
                         .ok_or_else(|| anyhow!("failed to read input"))?;
-                    self.write_parameter(1, m1, val)?;
+                    self.write_parameter(1, m1, val);
                     self.pc += 2;
                 }
                 OpCode::Output(m1) => {
-                    self.output.push_back(self.read_parameter(1, m1)?);
+                    self.output.push_back(self.read_parameter(1, m1));
                     self.pc += 2;
                     break Ok(StepResult::Output);
                 }
                 OpCode::JumpIfTrue(m1, m2) => {
-                    let val = self.read_parameter(1, m1)?;
+                    let val = self.read_parameter(1, m1);
                     if val != 0 {
-                        self.pc = self.read_parameter(2, m2)? as usize;
+                        self.pc = self.read_parameter(2, m2) as usize;
                     } else {
                         self.pc += 3;
                     }
                 }
                 OpCode::JumpIfFalse(m1, m2) => {
-                    let val = self.read_parameter(1, m1)?;
+                    let val = self.read_parameter(1, m1);
                     if val == 0 {
-                        self.pc = self.read_parameter(2, m2)? as usize;
+                        self.pc = self.read_parameter(2, m2) as usize;
                     } else {
                         self.pc += 3;
                     }
                 }
                 OpCode::LessThan(m1, m2, m3) => {
-                    let val1 = self.read_parameter(1, m1)?;
-                    let val2 = self.read_parameter(2, m2)?;
+                    let val1 = self.read_parameter(1, m1);
+                    let val2 = self.read_parameter(2, m2);
                     let val3 = if val1 < val2 { 1 } else { 0 };
-                    self.write_parameter(3, m3, val3)?;
+                    self.write_parameter(3, m3, val3);
                     self.pc += 4;
                 }
                 OpCode::Equal(m1, m2, m3) => {
-                    let val1 = self.read_parameter(1, m1)?;
-                    let val2 = self.read_parameter(2, m2)?;
+                    let val1 = self.read_parameter(1, m1);
+                    let val2 = self.read_parameter(2, m2);
                     let val3 = if val1 == val2 { 1 } else { 0 };
-                    self.write_parameter(3, m3, val3)?;
+                    self.write_parameter(3, m3, val3);
                     self.pc += 4;
+                }
+                OpCode::AdjustBase(m1) => {
+                    self.base += self.read_parameter(1, m1);
+                    self.pc += 2;
                 }
                 OpCode::Halt => break Ok(StepResult::Halt),
             }
