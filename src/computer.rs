@@ -59,6 +59,7 @@ pub struct Instant {
     pub output: VecDeque<Int>,
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum StepResult {
     Output,
     Halt,
