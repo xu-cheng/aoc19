@@ -1,5 +1,3 @@
-extern crate num_integer;
-
 use aoc2019::*;
 use num_integer::Integer;
 use std::cmp::Ordering;

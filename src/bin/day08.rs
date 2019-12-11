@@ -1,5 +1,3 @@
-extern crate bytecount;
-
 use aoc2019::*;
 
 fn main() -> Result<()> {

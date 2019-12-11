@@ -1,8 +1,5 @@
-pub extern crate anyhow;
-pub extern crate itertools;
-
 pub use anyhow::{anyhow, bail, Error, Result};
-pub use itertools::Itertools;
+pub use itertools::{self, Itertools};
 pub use std::fs::File;
 pub use std::io::prelude::*;
 pub use std::io::{self, BufReader};

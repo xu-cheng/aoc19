@@ -1,5 +1,3 @@
-extern crate petgraph;
-
 use aoc2019::*;
 use petgraph::prelude::*;
 use std::collections::HashMap;
