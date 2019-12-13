@@ -1,4 +1,4 @@
-//! Intcode Computer used in Day 05, 07, 09
+//! Intcode Computer used in Day 05, 07, 09, 11, 13
 
 use crate::*;
 use std::collections::VecDeque;
@@ -62,6 +62,7 @@ pub struct Instant {
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum StepResult {
     Output,
+    WaitInput,
     Halt,
 }
 
@@ -178,12 +179,12 @@ impl Instant {
                     self.pc += 4;
                 }
                 OpCode::Input(m1) => {
-                    let val = self
-                        .input
-                        .pop_front()
-                        .ok_or_else(|| anyhow!("failed to read input"))?;
-                    self.write_parameter(1, m1, val);
-                    self.pc += 2;
+                    if let Some(val) = self.input.pop_front() {
+                        self.write_parameter(1, m1, val);
+                        self.pc += 2;
+                    } else {
+                        break Ok(StepResult::WaitInput);
+                    }
                 }
                 OpCode::Output(m1) => {
                     self.output.push_back(self.read_parameter(1, m1));
@@ -234,6 +235,7 @@ impl Instant {
             match self.step()? {
                 StepResult::Halt => break Ok(Vec::from(self.output.clone())),
                 StepResult::Output => {}
+                StepResult::WaitInput => bail!("failed to get input"),
             }
         }
     }
