@@ -1,5 +1,5 @@
 use aoc2019::*;
-use num_integer::lcm;
+use num::Integer;
 use regex::Regex;
 use std::cmp::Ordering;
 use std::iter::{FromIterator, IntoIterator};
@@ -142,7 +142,7 @@ fn main() -> Result<()> {
             break;
         }
     }
-    let ans2 = cycles.iter().fold(1, |res, x| lcm(res, x.unwrap()));
+    let ans2 = cycles.iter().fold(1, |res, x| res.lcm(&x.unwrap()));
     println!("ans2={:?}", ans2);
 
     Ok(())

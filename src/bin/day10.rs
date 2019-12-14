@@ -1,5 +1,5 @@
 use aoc2019::*;
-use num_integer::Integer;
+use num::Integer;
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, BinaryHeap, HashSet};
 

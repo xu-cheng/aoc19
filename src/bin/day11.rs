@@ -70,7 +70,7 @@ impl Robot {
         self.instant
             .output
             .pop_front()
-            .ok_or_else(|| anyhow!("failed to get output"))
+            .context("failed to get output")
     }
 
     fn run(&mut self, color: Color) -> Result<()> {

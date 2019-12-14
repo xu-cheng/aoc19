@@ -8,11 +8,7 @@ fn run(input: &[usize], non: usize, verb: usize) -> Result<usize> {
 
     let mem_cell = RefCell::new(&mut mem);
     let read = |loc: usize| -> Result<usize> {
-        mem_cell
-            .borrow()
-            .get(loc)
-            .copied()
-            .ok_or_else(|| anyhow!("out of range"))
+        mem_cell.borrow().get(loc).copied().context("out of range")
     };
     let deref_read = |loc: usize| -> Result<usize> { read(read(loc)?) };
     let write = |loc: usize, val: usize| -> Result<()> {
@@ -20,7 +16,7 @@ fn run(input: &[usize], non: usize, verb: usize) -> Result<usize> {
             .borrow_mut()
             .get_mut(loc)
             .map(|v| *v = val)
-            .ok_or_else(|| anyhow!("out of range"))
+            .context("out of range")
     };
     let mut pc: usize = 0;
     loop {

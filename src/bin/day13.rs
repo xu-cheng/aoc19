@@ -61,19 +61,16 @@ impl Game {
             }
         };
         for mut chunk in &self.instant.output.iter().chunks(3) {
-            let x = *chunk
-                .next()
-                .ok_or_else(|| anyhow!("failed to read output"))?;
-            let y = *chunk
-                .next()
-                .ok_or_else(|| anyhow!("failed to read output"))?;
-            let t = *chunk
-                .next()
-                .ok_or_else(|| anyhow!("failed to read output"))?;
-            if let Ok(tile) = Tile::try_from(t) {
-                self.tiles.insert(Point(x, y), tile);
-            } else {
-                self.score = t;
+            let x = *chunk.next().context("failed to read output")?;
+            let y = *chunk.next().context("failed to read output")?;
+            let t = *chunk.next().context("failed to read output")?;
+            match Tile::try_from(t) {
+                Ok(tile) => {
+                    self.tiles.insert(Point(x, y), tile);
+                }
+                Err(_) => {
+                    self.score = t;
+                }
             }
         }
         self.instant.output.clear();
