@@ -1,4 +1,4 @@
-//! Intcode Computer used in Day 05, 07, 09, 11, 13
+//! Intcode Computer used in Day 05, 07, 09, 11, 13, 15
 
 use crate::*;
 use std::collections::VecDeque;
@@ -51,6 +51,7 @@ impl Program {
     }
 }
 
+#[derive(Clone)]
 pub struct Instant {
     pub pc: usize,
     pub base: Int,
@@ -228,6 +229,22 @@ impl Instant {
                 OpCode::Halt => break Ok(StepResult::Halt),
             }
         }
+    }
+
+    pub fn push_input(&mut self, val: Int) {
+        self.input.push_back(val);
+    }
+
+    pub fn pop_output(&mut self) -> Option<Int> {
+        self.output.pop_front()
+    }
+
+    pub fn clear_output(&mut self) {
+        self.output.clear();
+    }
+
+    pub fn output_iter(&self) -> impl Iterator<Item = &Int> {
+        self.output.iter()
     }
 
     pub fn execute(&mut self) -> Result<Vec<Int>> {

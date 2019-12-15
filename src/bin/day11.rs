@@ -63,14 +63,11 @@ impl Robot {
     }
 
     fn push_input(&mut self, val: Int) {
-        self.instant.input.push_back(val);
+        self.instant.push_input(val);
     }
 
     fn pop_output(&mut self) -> Result<Int> {
-        self.instant
-            .output
-            .pop_front()
-            .context("failed to get output")
+        self.instant.pop_output().context("failed to get output")
     }
 
     fn run(&mut self, color: Color) -> Result<()> {

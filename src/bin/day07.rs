@@ -18,9 +18,9 @@ fn run_q2(prog: &Program, settings: &[Int]) -> Result<Int> {
     }
     for i in (0..settings.len()).cycle() {
         let instant = &mut instants[i];
-        instant.input.push_back(val);
+        instant.push_input(val);
         instant.step()?;
-        if let Some(out) = instant.output.pop_front() {
+        if let Some(out) = instant.pop_output() {
             val = out;
         } else {
             break;

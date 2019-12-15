@@ -60,7 +60,7 @@ impl Game {
                 StepResult::Output => continue,
             }
         };
-        for mut chunk in &self.instant.output.iter().chunks(3) {
+        for mut chunk in &self.instant.output_iter().chunks(3) {
             let x = *chunk.next().context("failed to read output")?;
             let y = *chunk.next().context("failed to read output")?;
             let t = *chunk.next().context("failed to read output")?;
@@ -73,12 +73,12 @@ impl Game {
                 }
             }
         }
-        self.instant.output.clear();
+        self.instant.clear_output();
         Ok(is_halt)
     }
 
     fn send_input(&mut self, val: i64) {
-        self.instant.input.push_back(val);
+        self.instant.push_input(val);
     }
 
     fn blocks(&self) -> impl Iterator<Item = (&Point, &Tile)> {

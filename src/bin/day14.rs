@@ -33,7 +33,7 @@ fn parse_reactions(input: &str) -> Result<Reactions> {
             .next()
             .context("failed to parse reaction")?
             .split(',')
-            .map(|s| Component::try_from(s))
+            .map(Component::try_from)
             .collect::<Result<Vec<_>>>()?;
         let product = Component::try_from(reaction.next().context("failed to parse reaction")?)?;
         reactions.insert(product.name, (product.amount, ingredients));
