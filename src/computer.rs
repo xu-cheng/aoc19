@@ -1,4 +1,4 @@
-//! Intcode Computer used in Day 05, 07, 09, 11, 13, 15
+//! Intcode Computer used in Day 05, 07, 09, 11, 13, 15, 17
 
 use crate::*;
 use std::collections::VecDeque;
@@ -7,7 +7,7 @@ use std::iter::FromIterator;
 
 pub type Int = i64;
 
-pub struct Program(Vec<Int>);
+pub struct Program(pub Vec<Int>);
 
 impl Program {
     pub fn new(code: Vec<Int>) -> Self {
@@ -233,6 +233,12 @@ impl Instant {
 
     pub fn push_input(&mut self, val: Int) {
         self.input.push_back(val);
+    }
+
+    pub fn push_inputs(&mut self, vals: &[Int]) {
+        for v in vals {
+            self.input.push_back(*v);
+        }
     }
 
     pub fn pop_output(&mut self) -> Option<Int> {
