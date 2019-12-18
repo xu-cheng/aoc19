@@ -1,3 +1,5 @@
+#![allow(clippy::type_complexity)]
+
 use aoc2019::*;
 use petgraph::algo::astar;
 use petgraph::prelude::*;

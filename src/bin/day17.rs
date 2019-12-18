@@ -164,7 +164,7 @@ impl View {
 struct Move(char, i32);
 
 impl Move {
-    fn to_input(&self) -> Vec<Int> {
+    fn to_input(self) -> Vec<Int> {
         let mut res = Vec::new();
         res.push(self.0 as Int);
         res.push(44);
