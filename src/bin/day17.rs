@@ -108,13 +108,11 @@ impl View {
         let idx = self
             .data
             .iter()
-            .enumerate()
-            .find(|(_, &c)| {
+            .position(|&c| {
                 let c = c as char;
                 c == '^' || c == '<' || c == '>' || c == 'v'
             })
-            .unwrap()
-            .0 as i32;
+            .unwrap() as i32;
         let p = Point(idx % self.width, idx / self.width);
         let d = match self.data[idx as usize] as char {
             '^' => N,
