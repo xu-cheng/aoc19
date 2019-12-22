@@ -9,6 +9,7 @@ publish = false
 anyhow = "1.0"
 bytecount = "0.6"
 itertools = "0.8"
+lazy_static = "1.4"
 num = "0.1"
 petgraph = "0.4"
 priority-queue = "0.6"
